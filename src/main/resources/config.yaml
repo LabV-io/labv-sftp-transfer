@@ -1,0 +1,29 @@
+# Interval in seconds for scanning
+intervalSeconds: 300
+
+# Logging configuration
+log:
+  directory: "./log"
+  enableFileLogging: true        # Set to false to disable log file writing
+  retentionDays: 14              # Delete log files older than X days
+
+# Folder definitions
+folders:
+  - path: "./to_upload"
+    pattern:
+      - "*.csv"
+      - "*.xml"
+    postAction: archive
+    archiveDir: "./archive"
+
+# SFTP server configuration
+sftp:
+  host: sftp.example.com
+  port: 22
+  username: your-username
+  privateKeyPath: "./id_rsa"
+  remoteDir: "/upload/"
+  
+  # Choose one of the following:
+  knownHostsPath: "./known_hosts"
+  # trustedHostPublicKey: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKiP..."
