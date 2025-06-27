@@ -9,7 +9,7 @@ jobs:
     runs-on: windows-latest
     
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v3
       
       - name: Set up GraalVM
@@ -17,28 +17,30 @@ jobs:
         with:
           java-version: '21'
           distribution: 'graalvm'
-          components: 'native-image'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
       
       - name: Set up Gradle
         uses: gradle/gradle-build-action@v2
       
-      - name: Build fat JAR
-        run: ./gradlew clean fatJar
+      - name: Clean and build fat JAR
+        run: ./gradlew clean shadowJar
       
-      - name: Generate native image
-        run: >
-          native-image
-          --no-fallback
-          --enable-http
-          --enable-https
-          --report-unsupported-elements-at-runtime
-          --initialize-at-build-time
-          -H:+ReportExceptionStackTraces
-          -jar build/libs/labv-sftp-transfer-all.jar
-          -H:Name=labv-sftp-transfer
+      - name: Create native image from fat JAR
+        run: |
+          native-image --no-fallback --enable-http --enable-https --verbose \
+          -jar build/libs/labv-sftp-transfer-all.jar \
+          -H:Name=labv-sftp-transfer \
+          -H:+ReportExceptionStackTraces \
+          -H:+PrintAnalysisCallTree \
+          -H:Log=registerResource \
+          -H:+UnlockExperimentalVMOptions
       
       - name: Upload native executable
         uses: actions/upload-artifact@v4
         with:
           name: labv-sftp-transfer.exe
           path: labv-sftp-transfer.exe
+          
+      - name: Run native image to test behavior
+        run: |
+          .\labv-sftp-transfer.exe --dry-run
