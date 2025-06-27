@@ -10,6 +10,11 @@ public class Config {
     private SftpConfig sftp;
     private LogConfig log;
     
+    public Config() {
+        
+        // Required by SnakeYAML to instantiate this class reflectively
+    }
+    
     public int getIntervalSeconds() {
         
         return intervalSeconds;
@@ -56,6 +61,11 @@ public class Config {
         private List<String> pattern;
         private String postAction;
         private String archiveDir;
+        
+        public FolderConfig() {
+            
+            // Required by SnakeYAML
+        }
         
         public String getPath() {
             
@@ -108,6 +118,11 @@ public class Config {
         private String remoteDir;
         private String knownHostsPath;
         private String trustedHostPublicKey;
+        
+        public SftpConfig() {
+            
+            // Required by SnakeYAML
+        }
         
         public String getHost() {
             
@@ -186,6 +201,11 @@ public class Config {
         private String directory;
         private boolean enableFileLogging = true;
         private int retentionDays = 14;
+        
+        public LogConfig() {
+            
+            // Required by SnakeYAML
+        }
         
         public String getDirectory() {
             

@@ -1,0 +1,29 @@
+[
+    {
+        "name": "io.labv.sftptransfer.MainCommand",
+        "allDeclaredConstructors": true,
+        "allDeclaredMethods": true
+    },
+    {
+        "name": "io.labv.sftptransfer.config.Config",
+        "allDeclaredConstructors": true,
+        "allDeclaredMethods": true,
+        "allPublicMethods": true,
+        "allPublicConstructors": true
+    },
+    {
+        "name": "io.labv.sftptransfer.config.Config$FolderConfig",
+        "allDeclaredConstructors": true,
+        "allDeclaredMethods": true
+    },
+    {
+        "name": "io.labv.sftptransfer.config.Config$SftpConfig",
+        "allDeclaredConstructors": true,
+        "allDeclaredMethods": true
+    },
+    {
+        "name": "io.labv.sftptransfer.config.Config$LogConfig",
+        "allDeclaredConstructors": true,
+        "allDeclaredMethods": true
+    }
+]

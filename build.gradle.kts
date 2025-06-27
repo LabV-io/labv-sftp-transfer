@@ -18,6 +18,8 @@ repositories {
 
 dependencies {
     implementation("info.picocli:picocli:$picocliVersion")
+    annotationProcessor("info.picocli:picocli-codegen:$picocliVersion")
+
     implementation("org.yaml:snakeyaml:$snakeyamlVersion")
     implementation("com.hierynomus:sshj:$sshjVersion")
     implementation("commons-io:commons-io:$commonsIoVersion")
@@ -26,4 +28,57 @@ dependencies {
 
 application {
     mainClass.set("io.labv.sftptransfer.MainCommand")
+}
+
+tasks.withType<Jar> {
+    manifest {
+        attributes["Main-Class"] = application.mainClass.get()
+    }
+}
+
+tasks.named<Jar>("jar") {
+    archiveBaseName.set("labv-sftp-transfer")
+    archiveVersion.set("")
+}
+
+tasks.withType<JavaCompile> {
+    options.annotationProcessorGeneratedSourcesDirectory = file("$buildDir/generated/sources/annotationProcessor/java/main")
+    options.annotationProcessorPath = configurations.annotationProcessor.get()
+}
+
+sourceSets["main"].java {
+    srcDir("$buildDir/generated/sources/annotationProcessor/java/main")
+}
+
+tasks.register<Copy>("copyNativeImageConfigs") {
+    from("$buildDir/classes/java/main/META-INF/native-image")
+    into("$buildDir/native-image-configs")
+}
+
+tasks.register<Jar>("fatJar") {
+    dependsOn("build")
+    archiveBaseName.set("labv-sftp-transfer-all")
+    archiveVersion.set("")
+
+    manifest {
+        attributes["Main-Class"] = application.mainClass.get()
+    }
+
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+    from(sourceSets.main.get().output)
+
+    from({
+        configurations.runtimeClasspath.get().filter { it.name.endsWith("jar") }.map {
+            zipTree(it).matching {
+                exclude(
+                    "META-INF/*.SF",
+                    "META-INF/*.DSA",
+                    "META-INF/*.RSA",
+                    "META-INF/MANIFEST.MF",
+                    "META-INF/INDEX.LIST"
+                )
+            }
+        }
+    })
 }

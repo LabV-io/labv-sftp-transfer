@@ -22,7 +22,7 @@ sftp:
   port: 22
   username: your-username
   privateKeyPath: "./id_rsa"
-  remoteDir: "/upload/"
+  remoteDir: "./upload"
   
   # Choose one of the following:
   knownHostsPath: "./known_hosts"

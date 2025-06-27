@@ -9,10 +9,7 @@ import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -43,7 +40,9 @@ public class MainCommand implements Callable<Integer> {
     @Override
     public Integer call() {
         
-        printAsciiLogo();
+        System.out.println("LabV SFTP Transfer");
+        System.out.println("==================");
+        System.out.println();
         
         if (!configFile.exists()) {
             System.err.println("Configuration file not found: " + configFile.getAbsolutePath());
@@ -76,19 +75,6 @@ public class MainCommand implements Callable<Integer> {
         }
         
         return 0;
-    }
-    
-    private static void printAsciiLogo() {
-        
-        try (InputStream is = MainCommand.class.getResourceAsStream("/labv-logo.txt")) {
-            assert is != null;
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(is))) {
-                reader.lines().forEach(System.out::println);
-            }
-        } catch (Exception e) {
-            // Fallback if logo is missing
-            System.out.println("LabV - SFTP Transfer");
-        }
     }
     
     public static void main(String[] args) {
