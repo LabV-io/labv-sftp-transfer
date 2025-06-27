@@ -1,0 +1,44 @@
+name: Build native Windows executable
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      
+      - name: Set up GraalVM
+        uses: graalvm/setup-graalvm@v1
+        with:
+          java-version: '21'
+          distribution: 'graalvm'
+          components: 'native-image'
+      
+      - name: Set up Gradle
+        uses: gradle/gradle-build-action@v2
+      
+      - name: Build fat JAR
+        run: ./gradlew clean fatJar
+      
+      - name: Generate native image
+        run: >
+          native-image
+          --no-fallback
+          --enable-http
+          --enable-https
+          --report-unsupported-elements-at-runtime
+          --initialize-at-build-time
+          -H:+ReportExceptionStackTraces
+          -jar build/libs/labv-sftp-transfer-all.jar
+          -H:Name=labv-sftp-transfer
+      
+      - name: Upload native executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: labv-sftp-transfer.exe
+          path: labv-sftp-transfer.exe
