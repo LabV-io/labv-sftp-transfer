@@ -22,8 +22,8 @@ jobs:
       - name: Set up Gradle
         uses: gradle/gradle-build-action@v2
       
-      - name: Clean and build fat JAR
-        run: ./gradlew clean shadowJar
+      - name: Build fat JAR
+        run: ./gradlew clean fatJar
       
       - name: Create native image from fat JAR
         run: |
