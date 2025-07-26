@@ -18,7 +18,6 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-
 @Command(name = "labv-sftp-transfer",
         mixinStandardHelpOptions = true,
         version = "labv-sftp-transfer 1.0",
@@ -49,7 +48,7 @@ public class MainCommand implements Callable<Integer> {
             return 1;
         }
         
-        try (ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor()) {
+        try {
             Config config = ConfigLoader.load(configFile);
             ConfigValidator.validate(config);
             
@@ -61,13 +60,24 @@ public class MainCommand implements Callable<Integer> {
                     handler.setLevel(level);
                 }
             }
-            logger.info("Configuration loaded. Starting monitor...");
             
-            MonitorTask task = new MonitorTask(config, logger, dryRun);
+            logger.info("Configuration loaded.");
             
-            executor.scheduleAtFixedRate(task, 0, config.getIntervalSeconds(), TimeUnit.SECONDS);
-            logger.info("labv-sftp-transfer started. Press Ctrl+C to exit.");
-            Thread.currentThread().join();
+            if (config.getIntervalSeconds() == -1) {
+                logger.info("Running in single-run mode (no scheduler).");
+                MonitorTask task = new MonitorTask(config, logger, dryRun);
+                task.run();
+                logger.info("Single-run completed. Exiting.");
+                return 0;
+            }
+            
+            logger.info("Starting scheduled monitor...");
+            try (ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor()) {
+                MonitorTask task = new MonitorTask(config, logger, dryRun);
+                executor.scheduleAtFixedRate(task, 0, config.getIntervalSeconds(), TimeUnit.SECONDS);
+                logger.info("labv-sftp-transfer started. Press Ctrl+C to exit.");
+                Thread.currentThread().join();
+            }
             
         } catch (Exception e) {
             System.err.println("Error: " + e.getMessage());
@@ -78,7 +88,6 @@ public class MainCommand implements Callable<Integer> {
     }
     
     public static void main(String[] args) {
-        
         int exitCode = new CommandLine(new MainCommand()).execute(args);
         System.exit(exitCode);
     }
