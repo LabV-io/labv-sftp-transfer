@@ -6,7 +6,7 @@ The tool:
 
 - regularly scans defined local folders for new files (based on configured patterns),
 - uploads matching files to a remote server via SFTP using public key authentication,
-- archives or deletes files after upload, depending on configuration,
+- archives or deletes files after upload, depending on configuration.
 
 ---
 
@@ -39,13 +39,19 @@ java -jar labv-sftp-transfer.jar --config path/to/config.yaml
 
 ## Configuration (`config.yaml`)
 
-### Interval
+### Interval Configuration
+
+The `intervalSeconds` at the root of the config defines the **global/default interval** for all folders:
 
 ```yaml
 intervalSeconds: 300
 ```
 
-Time (in seconds) between scans.
+- **`-1`** → **Run-once mode**: All folders are scanned and processed exactly once, then the tool exits.  
+  Per-folder intervals are **ignored** in this mode.
+- **`>= 1`** → **Periodic mode**: Each folder is scanned repeatedly.
+    - If a folder defines its own `intervalSeconds` (>= 1), it overrides the global interval for that folder.
+    - If no folder-specific interval is set, the global interval applies.
 
 ---
 
@@ -59,6 +65,7 @@ folders:
       - "*.xml"
     postAction: archive
     archiveDir: "./archive"
+    intervalSeconds: 60   # Optional: overrides global interval if global != -1
 
   - path: "./to_delete"
     pattern:
@@ -66,12 +73,13 @@ folders:
     postAction: delete
 ```
 
-| Field         | Description                                                                   |
-|---------------|-------------------------------------------------------------------------------|
-| `path`        | Path to folder to monitor                                                     |
-| `pattern`     | One or more wildcard patterns to match files (e.g. `*.csv`, `report-*.xml`)  |
-| `postAction`  | Action after upload: `archive` or `delete`                                   |
-| `archiveDir`  | Required if `postAction` is `archive`; archive target directory              |
+| Field              | Description                                                                 |
+|--------------------|-----------------------------------------------------------------------------|
+| `path`             | Path to folder to monitor                                                   |
+| `pattern`          | One or more wildcard patterns to match files (e.g. `*.csv`, `report-*.xml`) |
+| `postAction`       | Action after upload: `archive`, `delete`, or `none`                         |
+| `archiveDir`       | Required if `postAction` is `archive`; archive target directory             |
+| `intervalSeconds`  | Optional, must be >= 1; overrides global interval in periodic mode only     |
 
 ---
 
@@ -90,7 +98,7 @@ sftp:
 
 - Authentication is based on an SSH private key.
 - Either `knownHostsPath` or `trustedHostPublicKey` must be provided.
-- `trustedHostPublicKey` must be provided in the full OpenSSH format, e.g. `ssh-rsa AAAAB3...`.
+- `trustedHostPublicKey` can be in full OpenSSH format (`ssh-ed25519 AAAA...`) or just the base64 key payload.
 
 ---
 
@@ -120,4 +128,41 @@ Simulates scanning and uploading without performing actual file transfers or del
 
 ```bash
 java -jar labv-sftp-transfer.jar --config config.yaml --dry-run
+```
+
+---
+
+## Examples
+
+### Run-once Mode
+
+```yaml
+intervalSeconds: -1
+folders:
+  - path: "./to_upload"
+    pattern: ["*.csv"]
+    postAction: archive
+    archiveDir: "./archive"
+  - path: "./to_delete"
+    pattern: ["*.xml"]
+    postAction: delete
+```
+
+Runs **each folder exactly once** and exits.
+
+### Periodic Mode with Mixed Intervals
+
+```yaml
+intervalSeconds: 300  # default for all folders
+folders:
+  - path: "./fast"
+    pattern: ["*.csv"]
+    postAction: delete
+    intervalSeconds: 60  # overrides global interval
+
+  - path: "./slow"
+    pattern: ["*.xml"]
+    postAction: archive
+    archiveDir: "./archive"
+    # uses global interval of 300 seconds
 ```

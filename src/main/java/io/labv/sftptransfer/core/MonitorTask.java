@@ -29,7 +29,7 @@ public class MonitorTask implements Runnable {
         this.config = config;
         this.logger = logger;
         this.dryRun = dryRun;
-        this.sftpUploader = new SftpUploader(config.getSftp(), logger, dryRun);
+        this.sftpUploader = new SftpUploader(config, logger, dryRun);
     }
     
     @Override
